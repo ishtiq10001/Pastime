@@ -15,36 +15,37 @@ def read_file():
 
     u_1 = users.split(',')
     p_1 = passw.split(',')
-    
+
 
     for u,p in zip(u_1,p_1):
         u_p_dict[u] = p
 
 
-    
+
 
 def check_user(userN):
     if userN == "":
         return False
     if userN in u_p_dict:
-        
+
         return False
     else:
-        
+
         return True
 
 
 def signup():
+    read_file()
     user_N = input("enter username: ")
     if check_user(user_N) == False:
         print("username already exists")
-        return signup()    
+        return signup()
     else:
         pass
-    
+
     pass_w = input("enter password: ")
     conf_p = input("confirm password: ")
-    
+
     if (check_user(user_N) == True) and (pass_w != conf_p):
         print("password is not the same as above")
         return signup()
@@ -71,24 +72,62 @@ def signup():
         print("unexpected error")
         return signup()
 
-
+attempts = 0
 def login():
+    global attempts
+    if attempts > 5:
+        print("too many attempts, try again later")
+        return None
     userName = input("enter username: ")
-    passWord = input("enter password: ")
+
     read_file()
-    if userName not in u_p_dict():
-        return login()
+    if userName not in u_p_dict.keys():
+        print("username does not exist")
+        print("create a new account?")
+        option_e = input("y for yes, n to enter username again: ")
+        if  option_e.lower() == 'y':
+            return signup()
+        else:
+            return login()
 
     else:
+        passWord = input("enter password: ")
         for i,j in u_p_dict.items():
-            if userName == i and passWord == j:
-                return True
+            enc1 = passWord.encode()
+            hash1 = hashlib.md5(enc1).hexdigest()
+            if userName == i and hash1 == j:
+                success = True
+                attempts = 0
+                print('sucessfully logged in')
+                return (userName,passWord)
             else:
                 continue
-                
 
+        print("invalid password")
+        success = False
+        if success == False:
+            attempts +=1
+            return login()
 
+def main_menu():
+    while True:
+        print("""   -- main menu --
+        what do you want to do
+        1. Login
+        2. Sign up
+        3. To exit""")
+        l = None
+        user_I = input("input 1 for login and 2 for sign up: ")
+        if user_I == "1":
+            l = login()
+        elif user_I == "2":
+            signup()
+        elif user_I == "3":
+            exit()
+        if l is not None:
+            break
+        else:
+            continue
+    return l
 if __name__ == '__main__':#main "method"
-    read_file()
-    signup()
-    
+    main_menu()
